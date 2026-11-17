@@ -1,0 +1,41 @@
+services:
+  gr5_neural_pipe:
+    build: ./gr5_neural_pipe
+    container_name: gr5_neural_pipe
+    restart: unless-stopped
+    network_mode: host
+    env_file:
+      - .env
+    #devices:
+      #- /dev/video0:/dev/video0
+    group_add:
+      - video
+    volumes:
+      - ./gr5_neural_pipe/templates:/app/templates:ro
+      - ./gr5_neural_pipe/yolov8n-pose.pt:/app/yolov8n-pose.pt:ro
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8085/api/telemetry"]
+      interval: 15s
+      timeout: 3s
+      retries: 3
+      start_period: 30s
+
+  ros_node:
+    build: ./ros
+    container_name: gorodovoi_ros
+    restart: unless-stopped
+    network_mode: host
+    env_file:
+      - .env
+    volumes:
+      - ../colcon_ws:/colcon_ws
+    depends_on:
+      gr5_neural_pipe:
+        condition: service_healthy

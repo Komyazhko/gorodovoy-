@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Robot Vision</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #1e1e1e; color: #fff; margin: 0; padding: 20px; }
+        .container { display: flex; gap: 20px; }
+        .video-container { flex: 2; }
+        img { width: 100%; border-radius: 8px; border: 2px solid #333; }
+        .panel { flex: 1; background: #2d2d2d; padding: 20px; border-radius: 8px; }
+        h2 { margin-top: 0; color: #4CAF50; }
+        .stat { margin-bottom: 15px; font-size: 18px; }
+        .value { font-weight: bold; color: #FFC107; }
+        .status-ok { color: #4CAF50; }
+        .status-error { color: #F44336; }
+        .status-locked { color: #FF9800; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>Панель управления роботом</h1>
+    <div class="container">
+        <div class="video-container">
+            <img src="/video_feed" alt="Видеопоток">
+        </div>
+        <div class="panel">
+            <h2>Телеметрия</h2>
+            <div class="stat">Статус: <span id="status" class="value">-</span></div>
+            <div class="stat">FPS: <span id="fps" class="value">-</span></div>
+            <div class="stat">Задержка ИИ: <span id="inference" class="value">-</span> мс</div>
+            <div class="stat">Рука: <span id="hand" class="value">-</span></div>
+            <div class="stat">Прогресс: <span id="progress" class="value">-</span> / 3.0 с</div>
+            <div class="stat">Цель: <span id="locked" class="value">-</span></div>
+        </div>
+    </div>
+    <script>
+        setInterval(async () => {
+            try {
+                const res = await fetch('/api/telemetry');
+                const data = await res.json();
+                
+                document.getElementById('status').innerText = data.status;
+                document.getElementById('status').className = data.status === 'running' ? 'value status-ok' : 'value status-error';
+                
+                document.getElementById('fps').innerText = data.processing_fps;
+                document.getElementById('inference').innerText = data.inference_ms;
+                document.getElementById('hand').innerText = data.hand_detected ? 'Да' : 'Нет';
+                document.getElementById('progress').innerText = data.hold_progress;
+                
+                const lockedEl = document.getElementById('locked');
+                lockedEl.innerText = data.target_locked ? 'ЗАХВАЧЕНА' : 'Нет';
+                lockedEl.className = data.target_locked ? 'value status-locked' : 'value';
+                
+            } catch (e) { console.error(e); }
+        }, 500);
+    </script>
+</body>
+</html>

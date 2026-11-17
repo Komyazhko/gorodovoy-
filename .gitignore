@@ -1,0 +1,7 @@
+__pycache__/
+*.py[cod]
+.env
+colcon_ws/build/
+colcon_ws/install/
+colcon_ws/log/
+*.pt
