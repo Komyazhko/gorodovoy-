@@ -128,7 +128,7 @@ def vision_worker():
     global latest_frame, hand_raise_start, last_hand_seen, locked_center, last_seen_time
 
     if isinstance(CAM_SRC, str) and CAM_SRC.startswith("rtsp://"):
-        os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = "rtsp_transport;tcp|fflags;nobuffer|flags;low_delay"
+        os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = "rtsp_transport;udp|fflags;nobuffer|flags;low_delay"
 
     cap = cv2.VideoCapture(CAM_SRC)
     
@@ -141,6 +141,7 @@ def vision_worker():
     if not cap.isOpened():
         state["status"] = "error"
         state["error"] = f"Не удалось открыть камеру ({CAM_SRC})"
+        print(f"!!! ОШИБКА: Не удалось открыть камеру {CAM_SRC} !!!")
         return
 
     state["status"] = "running"
@@ -242,6 +243,8 @@ def vision_worker():
                     state["target_angle"] = 0.0
                     state["target_distance_est"] = 0.0
                     send_robot_command({"cmd": "stop"})
+                else:
+                    cv2.putText(frame, f"Target occluded...", (20, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 165, 255), 2)
         else:
             hand_candidates = [p for p in people if p["hand_up"]]
             if hand_candidates:
