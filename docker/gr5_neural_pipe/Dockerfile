@@ -4,7 +4,6 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
 ENV PIP_NO_CACHE_DIR=1
 
-# Системные зависимости для OpenCV, YOLO, камеры и работы с ROS
 RUN apt-get update && apt-get install -y --no-install-recommends \
     python3-pip \
     libgl1 \
@@ -15,12 +14,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ffmpeg \
     v4l-utils \
     curl \
+    ros-humble-rmw-cyclonedds-cpp \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
 COPY requirements.txt .
-RUN pip3 install --no-cache-dir -r requirements.txt
+RUN pip3 install --no-cache-dir -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple --trusted-host pypi.tuna.tsinghua.edu.cn
 
 COPY . .
 
